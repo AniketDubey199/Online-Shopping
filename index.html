@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Razorpay Tester</title>
+</head>
+<body>
+    <h2>Razorpay Payment Test</h2>
+    <input type="text" id="order_id" placeholder="Paste Razorpay Order ID here" style="width: 300px;">
+    <button id="pay-button">Pay Now</button>
+
+    <div id="response" style="margin-top: 20px; color: blue; white-space: pre;"></div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        document.getElementById('pay-button').onclick = function(e){
+            var orderId = document.getElementById('order_id').value;
+            if(!orderId) { alert("Bhai Order ID toh daal!"); return; }
+
+            var options = {
+                "key": "rzp_test_S8aaQ2VsjKRZSQ", // Aapki Key
+                "amount": "49900", 
+                "currency": "INR",
+                "name": "Aniket Shopping",
+                "order_id": orderId, // Backend wali ID
+                "handler": function (response){
+                    // Payment success hone par ye data screen par dikhega
+                    document.getElementById('response').innerHTML = 
+                        "✅ Copy this for Postman Verify API:\n\n" +
+                        "razorpay_orderid: " + response.razorpay_order_id + "\n" +
+                        "razorpay_paymentid: " + response.razorpay_payment_id + "\n" +
+                        "razorpay_signature: " + response.razorpay_signature;
+                },
+                "theme": { "color": "#3399cc" }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+            e.preventDefault();
+        }
+    </script>
+</body>
+</html>
