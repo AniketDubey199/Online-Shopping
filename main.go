@@ -20,10 +20,7 @@ func main() {
 		port = "3000"
 	}
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load()
 
 	app := fiber.New(fiber.Config{
 		AppName: "E-Commerce",
