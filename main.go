@@ -6,6 +6,7 @@ import (
 
 	"github.com/AniketDubey199/online_shopping/auth"
 	"github.com/AniketDubey199/online_shopping/cart"
+	"github.com/AniketDubey199/online_shopping/database"
 	"github.com/AniketDubey199/online_shopping/payment"
 	"github.com/AniketDubey199/online_shopping/product"
 	"github.com/gofiber/fiber/v3"
@@ -19,7 +20,7 @@ func main() {
 		port = "3000"
 	}
 
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -30,15 +31,17 @@ func main() {
 
 	app.Use(logger.New())
 
-	cartApp := cart.NewApplication(auth.Usercollection, auth.Prodcollection)
+	db := database.InitializeDb()
+
+	cartApp := cart.NewApplication(db.Collection("User"), db.Collection("Product"))
 
 	auhtGroup := app.Group("/auth")
 
-	auth.Authentication(auhtGroup)
+	auth.Authentication(auhtGroup, db)
 
 	//public
 
-	product.ProductGroup(app)
+	product.ProductGroup(app, db)
 
 	//private
 

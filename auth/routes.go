@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/AniketDubey199/online_shopping/database"
 	"github.com/AniketDubey199/online_shopping/middleware"
 	"github.com/AniketDubey199/online_shopping/model"
 	"github.com/AniketDubey199/online_shopping/utils"
@@ -13,10 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var Usercollection *mongo.Collection = database.UserData(database.Client, "User")
-var Prodcollection *mongo.Collection = database.ProdData(database.Client, "Product")
-
-func Authentication(router fiber.Router) {
+func Authentication(router fiber.Router, db *mongo.Database) {
+	Usercollection := db.Collection("User")
 	router.Post("/register", func(c fiber.Ctx) error {
 		user := &model.User{
 			Username: c.FormValue("username"),

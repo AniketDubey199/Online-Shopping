@@ -4,26 +4,29 @@ import (
 	"context"
 	"time"
 
-	"github.com/AniketDubey199/online_shopping/database"
 	"github.com/AniketDubey199/online_shopping/model"
 	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var ProductCollection *mongo.Collection = database.ProdData(database.Client, "Product")
-var UserCollection *mongo.Collection = database.UserData(database.Client, "User")
-
-func ProductGroup(app *fiber.App) {
+func ProductGroup(app *fiber.App, db *mongo.Database) {
+	ProductCollection := db.Collection("Product")
 
 	productGroup := app.Group("/products")
 
-	productGroup.Get("/", SearchProduct)
-	productGroup.Get("/search", SearchQueryProduct)
-	productGroup.Post("/add", AddProduct)
+	productGroup.Get("/", func(c fiber.Ctx) error {
+		return SearchProduct(c, ProductCollection)
+	})
+	productGroup.Get("/search", func(c fiber.Ctx) error {
+		return SearchQueryProduct(c, ProductCollection)
+	})
+	productGroup.Post("/add", func(c fiber.Ctx) error {
+		return AddProduct(c, ProductCollection)
+	})
 }
 
-func SearchProduct(c fiber.Ctx) error {
+func SearchProduct(c fiber.Ctx, ProductCollection *mongo.Collection) error {
 	var productlist []model.Product
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -52,7 +55,7 @@ func SearchProduct(c fiber.Ctx) error {
 	})
 }
 
-func SearchQueryProduct(c fiber.Ctx) error {
+func SearchQueryProduct(c fiber.Ctx, ProductCollection *mongo.Collection) error {
 	var searchproduct []model.Product
 	queryParam := c.Query("name")
 
@@ -93,7 +96,7 @@ func SearchQueryProduct(c fiber.Ctx) error {
 
 }
 
-func AddProduct(c fiber.Ctx) error {
+func AddProduct(c fiber.Ctx, ProductCollection *mongo.Collection) error {
 
 	var product model.Product
 

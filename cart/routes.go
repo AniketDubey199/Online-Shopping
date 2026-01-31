@@ -6,11 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	// "github.com/AniketDubey199/online_shopping/cart"
 	"github.com/AniketDubey199/online_shopping/model"
 	"github.com/AniketDubey199/online_shopping/order"
 	"github.com/AniketDubey199/online_shopping/payment"
-	"github.com/AniketDubey199/online_shopping/product"
 	"github.com/AniketDubey199/online_shopping/utils"
 	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,6 +17,7 @@ import (
 )
 
 func CartRoutes(app *fiber.App, CartApp *Application) {
+
 	protected := app.Group("/cart", utils.Authenticator())
 
 	protected.Post("/add", CartApp.AddToCart)
@@ -149,7 +148,7 @@ func (app *Application) GetItem(c fiber.Ctx) error {
 	defer cancel()
 
 	var filledCart model.User
-	err = product.UserCollection.FindOne(ctx, bson.D{primitive.E{Key: "_id", Value: usert_id}}).Decode(&filledCart)
+	err = app.UserIDCollection.FindOne(ctx, bson.D{primitive.E{Key: "_id", Value: usert_id}}).Decode(&filledCart)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": "Cannot Extract",
@@ -159,7 +158,7 @@ func (app *Application) GetItem(c fiber.Ctx) error {
 	filter_match := bson.D{{Key: "$match", Value: bson.D{primitive.E{Key: "_id", Value: usert_id}}}}
 	unwind := bson.D{{Key: "$unwind", Value: bson.D{primitive.E{Key: "path", Value: "$usercart"}}}}
 	grouping := bson.D{{Key: "$group", Value: bson.D{primitive.E{Key: "_id", Value: "$_id"}, {Key: "total", Value: bson.D{{Key: "$sum", Value: "$usercart.price"}}}}}}
-	pointcursor, err := product.UserCollection.Aggregate(ctx, mongo.Pipeline{filter_match, unwind, grouping})
+	pointcursor, err := app.UserIDCollection.Aggregate(ctx, mongo.Pipeline{filter_match, unwind, grouping})
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error": "Some in pointer cursor",
